@@ -1,4 +1,4 @@
 all:
-	mpicc -o saida1 parallel.c 
+	mpicc -g -Wall -o saida.o parallel.c 
 clean:
 	rm *.o

@@ -16,7 +16,9 @@
 void find_bin(float value, float min_val, float max_val, int bin_count, int* bin_index) {
     float bin_width = (max_val - min_val) / bin_count;
     *bin_index = (int)((value - min_val) / bin_width);
-    if (*bin_index == bin_count) *bin_index--; 
+    if (*bin_index == bin_count){
+        *bin_index = bin_count - 1;
+    } 
 }
 
 int main(int argc, char* argv[]) {
