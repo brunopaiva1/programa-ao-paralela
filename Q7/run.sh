@@ -1,9 +1,9 @@
 #!/bin/bash
 
-PREFIX=$HOME/openmp/Q7 ; wait
+PREFIX=$HOME/Documentos/openmp/Q7 ; wait
 
 cd $PREFIX ; wait
 
 make -j ; wait
 
-mpiexec -np 4 ./saida 100000000
+mpiexec -np 4 ./saida.o 100000000
