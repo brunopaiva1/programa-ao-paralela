@@ -1,0 +1,9 @@
+Gerados 5000 valores float aleatórios no intervalo [0.0, 6.0].
+
+Histograma final:
+Bin 0 (0.0 - 1.0): 837
+Bin 1 (1.0 - 2.0): 824
+Bin 2 (2.0 - 3.0): 833
+Bin 3 (3.0 - 4.0): 881
+Bin 4 (4.0 - 5.0): 815
+Bin 5 (5.0 - 6.0): 810
