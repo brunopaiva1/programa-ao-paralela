@@ -6,4 +6,4 @@ cd $PREFIX ; wait
 
 make -j ; wait
 
-mpiexec -np 4 ./saida.o
+mpiexec -np 5 --hostfile ./hostfile ./saida.o
