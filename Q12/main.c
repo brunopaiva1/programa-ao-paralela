@@ -52,7 +52,8 @@ int main(int argc, char *argv[]){
             sub_B[i] = B[i];
         }
     } else{
-
+        MPI_Recv(sub_A, local_n, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(sub_B, local_n, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
 
     return 0;
