@@ -29,7 +29,20 @@ int main(int argc, char *argv[]){
         MPI_Finalize();
         return -1; 
     }
+    local_n = n / comm_sz;
+    sub_A = (int *)malloc(local_n * sizeof(int));
+    sub_B = (int *)malloc(local_n * sizeof(int));
 
+    if(rank==0){
+        A = (int *)malloc(n * sizeof(int));
+        B = (int *)malloc(n * sizeof(int));
+
+        srand(time(NULL));
+        for(int i = 0; i < n; i++){
+            A[i] = rand() % 10;
+            B[i] = rand() % 10;
+        }
+    }
 
     return 0;
 }
