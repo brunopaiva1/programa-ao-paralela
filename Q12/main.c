@@ -13,11 +13,23 @@ int main(int argc, char *argv[]){
     int comm_sz;
     int n;
     int *A = NULL, *B = NULL;
-    int local_A, local_B;
+    int *sub_A, *sub_B;
+    int local_n;
+    int local_dot = 0, global_dot;
     double start_time, end_time;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
+
+    if(n % comm_sz != 0) {
+        if(rank == 0) {
+            printf("Erro: n (%d) não é divisível por comm_sz (%d)\n", n, comm_sz);
+        }
+        MPI_Finalize();
+        return -1; 
+    }
+
+
     return 0;
 }
