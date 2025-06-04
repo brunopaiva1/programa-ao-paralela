@@ -11,7 +11,7 @@ que a divisão de N por P não tem resto.*/
 int main(int argc, char *argv[]){
     int rank;
     int comm_sz;
-    int n;
+    int n = 1000;
     int *A = NULL, *B = NULL;
     int *sub_A, *sub_B;
     int local_n;
@@ -55,6 +55,30 @@ int main(int argc, char *argv[]){
         MPI_Recv(sub_A, local_n, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         MPI_Recv(sub_B, local_n, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
+
+    for(int i = 0; i < local_n; i++){
+        local_dot += sub_A[i] * sub_B[i];
+    }
+    if (rank != 0) {
+        MPI_Send(&local_dot, 1, MPI_INT, 0, 2, MPI_COMM_WORLD);
+    } else {
+        global_dot = local_dot;
+        int temp;
+        for (int i = 1; i < comm_sz; i++) {
+            MPI_Recv(&temp, 1, MPI_INT, i, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            global_dot += temp;
+        }
+        printf("Produto escalar total: %d\n", global_dot);
+    }
+
+    free(sub_A);
+    free(sub_B);
+    if (rank == 0) {
+        free(A);
+        free(B);
+    }
+
+    MPI_Finalize();
 
     return 0;
 }
