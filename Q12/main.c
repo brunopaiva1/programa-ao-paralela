@@ -24,7 +24,7 @@ int main(int argc, char *argv[]){
 
     if(n % comm_sz != 0) {
         if(rank == 0) {
-            printf("Erro: n (%d) não é divisível por comm_sz (%d)\n", n, comm_sz);
+            printf("Erro: (%d) não é divisível por (%d)\n", n, comm_sz);
         }
         MPI_Finalize();
         return -1; 
@@ -42,6 +42,17 @@ int main(int argc, char *argv[]){
             A[i] = rand() % 10;
             B[i] = rand() % 10;
         }
+        for (int i = 1; i < comm_sz; i++){
+            MPI_Send(A + i * local_n, local_n, MPI_INT, i, 0, MPI_COMM_WORLD);
+            MPI_Send(B + i * local_n, local_n, MPI_INT, i, 1, MPI_COMM_WORLD);
+        }
+        
+        for(int i = 0; i < local_n; i++){
+            sub_A[i] = A[i];
+            sub_B[i] = B[i];
+        }
+    } else{
+
     }
 
     return 0;
