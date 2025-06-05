@@ -15,6 +15,9 @@ computação com o envio de mensagens.*/
 #include <stdlib.h>
 #include <mpi.h>
 
+#define RANGE 10
+#define TASK_SIZE 2
+
 int collatz_steps(unsigned int n){
     int steps = 0; 
     while(n != 1){
@@ -29,5 +32,63 @@ int collatz_steps(unsigned int n){
 }
 
 int main(int argc, char *argv[]){
-return 0;
+    int rank, comm_size;
+    int local_max_steps;
+    MPI_Request request;
+    MPI_Status status;
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
+
+    if(rank == 0){
+        int next_task = 1;
+        int works_done = 0;
+        int task_data[2];
+        int max_steps_recv;
+
+        for (int i = 1; i < comm_size; i++) {
+            if (next_task <= RANGE) {
+            task_data[0] = next_task;
+            task_data[1] = next_task + TASK_SIZE - 1;
+            next_task += TASK_SIZE;
+            MPI_Send(task_data, 2, MPI_INT, i, 0, MPI_COMM_WORLD);            }
+        }
+        while (works_done < comm_size - 1) {
+            MPI_Recv(&max_steps_recv, 1, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &status);
+        }
+        if (next_task <= RANGE) {
+                task_data[0] = next_task;
+                task_data[1] = next_task + TASK_SIZE - 1;
+                next_task += TASK_SIZE;
+                MPI_Send(task_data, 2, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
+            } else {
+                task_data[0] = 0;
+                task_data[1] = 0;
+                MPI_Send(task_data, 2, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
+                works_done++;
+            }
+
+        printf("Maior número de passos: %d\n", local_max_steps);
+    } else {
+        int task_data[2];
+        int max_steps = 0;
+        while (1) {
+            MPI_Recv(task_data, 2, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
+
+            if (task_data[0] == 0 && task_data[1] == 0)
+                break;
+
+            for (int i = task_data[0]; i <= task_data[1] && i <= RANGE; i++) {
+                int steps = collatz_steps(i);
+                if (steps > max_steps)
+                    max_steps = steps;
+            }
+
+            MPI_Send(&max_steps, 1, MPI_INT, 0, 1, MPI_COMM_WORLD);
+        }
+    }
+
+    MPI_Finalize();
+    return 0;
 }

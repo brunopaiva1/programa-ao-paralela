@@ -1,9 +1,9 @@
-// Use o MPI para implementar o programa de histograma discutido na Seção 2.7.1. Faça
-// com que o processo 0 leia os dados de entrada e os distribua entre os processos. Faça
-// também que o processo 0 imprima o histograma.
+/* Use o MPI para implementar o programa de histograma discutido na Seção 2.7.1. Faça
+ com que o processo 0 leia os dados de entrada e os distribua entre os processos. Faça
+ também que o processo 0 imprima o histograma. */
 
 // mpicc -o saida1 parallel.c 
-// mpirun -np 4 ./saida1
+// mpiexec -np 4 ./saida1
 
 #include <stdio.h>
 #include <stdlib.h>

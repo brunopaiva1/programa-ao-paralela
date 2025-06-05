@@ -6,6 +6,6 @@ cd $PREFIX ; wait
 
 make -j ; wait
 
-mpirun -np 4 ./saida.o > histograma.txt
+mpiexec -np 4 ./saida.o > histograma.txt
 
 python3 main.py
