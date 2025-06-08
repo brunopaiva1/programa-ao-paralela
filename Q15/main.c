@@ -15,8 +15,8 @@ computação com o envio de mensagens.*/
 #include <stdlib.h>
 #include <mpi.h>
 
-#define RANGE 10
-#define TASK_SIZE 2
+#define RANGE 100000000
+#define TASK_SIZE 500000
 
 int collatz_steps(unsigned int n){
     int steps = 0;
@@ -33,6 +33,7 @@ int collatz_steps(unsigned int n){
 
 int main(int argc, char *argv[]){
     int rank, comm_size;
+    double start_time, end_time;
     MPI_Status status;
 
     MPI_Init(&argc, &argv);
@@ -46,6 +47,8 @@ int main(int argc, char *argv[]){
         int workers_done = 0;
         int task_data[2];
         int max_steps_recv;
+
+        start_time = MPI_Wtime();
 
         for (int i = 1; i < comm_size && next_task <= RANGE; i++) {
             task_data[0] = next_task;
@@ -94,7 +97,10 @@ int main(int argc, char *argv[]){
             MPI_Isend(&max_steps, 1, MPI_INT, 0, 1, MPI_COMM_WORLD, &request);
             MPI_Wait(&request, &status);
         }
+        
     }
+    end_time = MPI_Wtime();
+    printf("Tempo de execução: %lf segundos\n", end_time - start_time);
 
     MPI_Finalize();
     return 0;
