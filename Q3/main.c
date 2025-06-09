@@ -43,6 +43,60 @@ void substitution_retroactive_row(double A_mat[N][N], double b_vec[N], double x_
     }
 }
 
+void substitution_retroactive_column(double A_mat[N][N], double b_vec[N], double x_vec[N]){
+    int i, col, lin;
+
+    #pragma omp parallel for
+    for(i = 0; i < N; i++){
+        x_vec[i] = b_vec[i];
+    }
+
+    for(col = N - 1; col >= 0; col--){
+         x_vec[col] /= A_mat[col][col];
+        for (lin = 0; lin < col; lin++)
+            x_vec[lin] -= A_mat[lin][col] * x_vec[col];
+    }
+}
+
+void substitution_retroactive_column_inner(double A_mat[N][N], double b_vec[N], double x_vec[N]){
+    int i, col, lin;
+
+    for(i = 0; i < N; i++){
+        x_vec[i] = b_vec[i];
+    }
+
+    for(col = N - 1; col >= 0; col--){
+        #pragma omp single
+        x_vec[col] /= A_mat[col][col];
+
+        #pragma omp parallel for
+        for(lin = 0; lin < col; lin++){
+            x_vec[lin] -= A_mat[lin][col] * x_vec[col];
+        }
+    }
+}
+
+void substitution_retroactive_row_serial(double A_mat[N][N], double b_vec[N], double x_vec[N]){
+    int lin, col;
+    for (lin = N - 1; lin >= 0; lin--) {
+        x_vec[lin] = b_vec[lin];
+        for (col = lin + 1; col < N; col++)
+            x_vec[lin] -= A_mat[lin][col] * x_vec[col];
+        x_vec[lin] /= A_mat[lin][lin];
+    }
+}
+
+void substitution_retroactive_column_serial(double A_mat[N][N], double b_vec[N], double x_vec[N]){
+        int i, col, lin;
+    for (i = 0; i < N; i++)
+        x_vec[i] = b_vec[i];
+    for (col = N - 1; col >= 0; col--) {
+        x_vec[col] /= A_mat[col][col];
+        for (lin = 0; lin < col; lin++)
+            x_vec[lin] -= A_mat[lin][col] * x_vec[col];
+    }
+}
+
 int main(){
 
 
