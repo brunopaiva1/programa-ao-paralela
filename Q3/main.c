@@ -15,17 +15,17 @@ double x_serial[N];
 
 void initialize_system() {
     int i, j;
-    for (i = 0; i < N; i++) {
+    for(i = 0; i < N; i++){
         b_vec[i] = (double)(i + 1.0); 
         x_parallel[i] = 0.0;          
         x_serial[i] = 0.0;           
-        for (j = 0; j < N; j++) {
+        for(j = 0; j < N; j++){
             if (j >= i) { 
                 A_mat[i][j] = (double)(i + j + 1.0);
                 if (i == j) {
                     A_mat[i][j] += 10.0;
                 }
-            } else {
+            } else{
                 A_mat[i][j] = 0.0;
             }
         }
@@ -34,9 +34,9 @@ void initialize_system() {
 
 void back_substitution_row_oriented_serial(double A[N][N], double b[N], double x[N]) {
     int lin, col;
-    for (lin = N - 1; lin >= 0; lin--) {
+    for(lin = N - 1; lin >= 0; lin--){
         x[lin] = b[lin];
-        for (col = lin + 1; col < N; col++)
+        for(col = lin + 1; col < N; col++)
             x[lin] -= A[lin][col] * x[col];
         x[lin] /= A[lin][lin];
     }
@@ -46,20 +46,20 @@ void back_substitution_column_oriented_serial(double A[N][N], double b[N], doubl
     int i, col, lin;
     for (i = 0; i < N; i++)
         x[i] = b[i];
-    for (col = N - 1; col >= 0; col--) {
+    for(col = N - 1; col >= 0; col--){
         x[col] /= A[col][col];
-        for (lin = 0; lin < col; lin++)
+        for(lin = 0; lin < col; lin++)
             x[lin] -= A[lin][col] * x[col];
     }
 }
 
 void back_substitution_row_oriented_parallel_inner(double A[N][N], double b[N], double x[N]) {
     int lin, col;
-    for (lin = N - 1; lin >= 0; lin--) {
+    for(lin = N - 1; lin >= 0; lin--){
         double current_b = b[lin];
         double terms_to_subtract = 0.0;
         #pragma omp parallel for reduction(+:terms_to_subtract)
-        for (col = lin + 1; col < N; col++) {
+        for(col = lin + 1; col < N; col++){
             terms_to_subtract += A[lin][col] * x[col];
         }
         x[lin] = (current_b - terms_to_subtract) / A[lin][lin];
@@ -69,46 +69,48 @@ void back_substitution_row_oriented_parallel_inner(double A[N][N], double b[N], 
 void back_substitution_column_oriented_parallel_initial_loop(double A[N][N], double b[N], double x[N]) {
     int i, col, lin;
     #pragma omp parallel for
-    for (i = 0; i < N; i++) {
+    for(i = 0; i < N; i++){
         x[i] = b[i];
     }
-    for (col = N - 1; col >= 0; col--) {
+    for(col = N - 1; col >= 0; col--){
         x[col] /= A[col][col];
-        for (lin = 0; lin < col; lin++)
+        for(lin = 0; lin < col; lin++)
             x[lin] -= A[lin][col] * x[col];
     }
 }
 
-void back_substitution_column_oriented_parallel_inner(double A[N][N], double b[N], double x[N]) {
+void back_substitution_column_oriented_parallel_inner(double A[N][N], double b[N], double x[N], int num_threads) {
     int i, col, lin;
-    for (i = 0; i < N; i++) {
+    #pragma omp parallel num_threads(num_threads) default(none) private(lin, col)
+    for(i = 0; i < N; i++){
         x[i] = b[i];
     }
-    for (col = N - 1; col >= 0; col--) {
+    for(col = N - 1; col >= 0; col--){
         #pragma omp single
         x[col] /= A[col][col];
-        #pragma omp parallel for
-        for (lin = 0; lin < col; lin++) {
+        #pragma omp parallel for schedule(runtime)
+        for(lin = 0; lin < col; lin++){
             x[lin] -= A[lin][col] * x[col];
         }
     }
 }
 
+
 int compare_results(double* result_parallel, double* result_serial, int size, const char* test_name) {
     int errors = 0;
-    for (int i = 0; i < size; i++) {
-        if (fabs(result_parallel[i] - result_serial[i]) > EPSILON) {
-            if (errors < 5) { 
+    for(int i = 0; i < size; i++){
+        if(fabs(result_parallel[i] - result_serial[i]) > EPSILON){
+            if(errors < 5){ 
                 printf("ERRO no %s: x_parallel[%d] = %f, x_serial[%d] = %f\n",
                        test_name, i, result_parallel[i], i, result_serial[i]);
             }
             errors++;
         }
     }
-    if (errors == 0) {
+    if(errors == 0){
         printf("RESULTADO do %s: CORRETO (paralelo e serial são iguais dentro da tolerância).\n", test_name);
         return 1;
-    } else {
+    } else{
         printf("RESULTADO do %s: INCORRETO (%d erros encontrados).\n", test_name, errors);
         return 0;
     }
@@ -118,6 +120,7 @@ int main() {
     initialize_system();
 
     double start_time, end_time;
+    int num_thread;
 
     printf("\n--- Teste de Corretude: Algoritmo Orientado a Linhas (Laco Interno Paralelo) ---\n");
 
@@ -160,7 +163,7 @@ int main() {
 
     memcpy(x_parallel, b_vec, N * sizeof(double));
     start_time = omp_get_wtime();
-    back_substitution_column_oriented_parallel_inner(A_mat, b_vec, x_parallel);
+    back_substitution_column_oriented_parallel_inner(A_mat, b_vec, x_parallel, num_thread);
     end_time = omp_get_wtime();
     printf("Tempo Paralelo: %f segundos\n", end_time - start_time);
 
