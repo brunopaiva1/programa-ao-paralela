@@ -4,7 +4,7 @@
 #include <string.h>
 #include <math.h>   
 
-#define N 1000
+#define N 10000
 
 #define EPSILON 1e-9
 
