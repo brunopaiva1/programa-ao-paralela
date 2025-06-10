@@ -4,7 +4,7 @@
 #include <string.h>
 #include <math.h>   
 
-#define N 10000
+#define N 15000
 
 #define EPSILON 1e-9
 
@@ -79,9 +79,8 @@ void back_substitution_column_oriented_parallel_initial_loop(double A[N][N], dou
     }
 }
 
-void back_substitution_column_oriented_parallel_inner(double A[N][N], double b[N], double x[N], int num_threads) {
+void back_substitution_column_oriented_parallel_inner(double A[N][N], double b[N], double x[N]) {
     int i, col, lin;
-# pragma omp parallel num_threads(num_threads) default(none) private(lin, col)
     for(i = 0; i < N; i++){
         x[i] = b[i];
     }
@@ -94,7 +93,6 @@ void back_substitution_column_oriented_parallel_inner(double A[N][N], double b[N
         }
     }
 }
-
 
 int compare_results(double* result_parallel, double* result_serial, int size, const char* test_name) {
     int errors = 0;
@@ -116,13 +114,28 @@ int compare_results(double* result_parallel, double* result_serial, int size, co
     }
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    int num_threads;
+
+    if(argc < 2) {
+        printf("Uso: %s <numero_de_threads>\n", argv[0]);
+        return 1;
+    }
+
+    num_threads = atoi(argv[1]);
+
+    if(num_threads <= 0){
+        printf("Erro: O número de threads deve ser um inteiro positivo. \n");
+        return 1;
+    }
+
+    omp_set_num_threads(num_threads);
+
     initialize_system();
 
     double start_time, end_time;
-    int num_thread;
 
-    printf("\n--- Teste de Corretude: Algoritmo Orientado a Linhas (Laco Interno Paralelo) ---\n");
+    printf("\n === Laco Interno Paralelo) ===\n");
 
     memcpy(x_serial, b_vec, N * sizeof(double));
     start_time = omp_get_wtime();
@@ -136,8 +149,8 @@ int main() {
     end_time = omp_get_wtime();
     printf("Tempo Paralelo: %f segundos\n", end_time - start_time);
 
-    compare_results(x_parallel, x_serial, N, "Orientado a Linhas (Laco Interno Paralelo)");
-    printf("\n--- Teste de Corretude: Algoritmo Orientado a Colunas (Primeiro Laco Paralelo) ---\n");
+    compare_results(x_parallel, x_serial, N, "Laco Interno Paralelo");
+    printf("\n=== Algoritmo Colunas - Primeiro Laco Paralelo ===\n");
 
     memcpy(x_serial, b_vec, N * sizeof(double));
     start_time = omp_get_wtime();
@@ -151,9 +164,9 @@ int main() {
     end_time = omp_get_wtime();
     printf("Tempo Paralelo: %f segundos\n", end_time - start_time);
 
-    compare_results(x_parallel, x_serial, N, "Orientado a Colunas (Primeiro Laco Paralelo)");
+    compare_results(x_parallel, x_serial, N, "Primeiro Laco Paralelo");
 
-    printf("\n--- Teste de Corretude: Algoritmo Orientado a Colunas (Laco Interno Paralelo) ---\n");
+    printf("\n=== Algoritmo Colunas - Laco Interno Paralelo ===\n");
 
     memcpy(x_serial, b_vec, N * sizeof(double));
     start_time = omp_get_wtime();
@@ -163,11 +176,11 @@ int main() {
 
     memcpy(x_parallel, b_vec, N * sizeof(double));
     start_time = omp_get_wtime();
-    back_substitution_column_oriented_parallel_inner(A_mat, b_vec, x_parallel, num_thread);
+    back_substitution_column_oriented_parallel_inner(A_mat, b_vec, x_parallel);
     end_time = omp_get_wtime();
     printf("Tempo Paralelo: %f segundos\n", end_time - start_time);
 
-    compare_results(x_parallel, x_serial, N, "Orientado a Colunas (Laco Interno Paralelo)");
+    compare_results(x_parallel, x_serial, N, "Colunas - Laco Interno Paralelo");
 
     return 0;
 }
