@@ -98,7 +98,29 @@ void substitution_retroactive_column_serial(double A_mat[N][N], double b_vec[N],
 }
 
 int main(){
+    inicialize_system(A, b, x_lin, x_col);
+    double start_time, end_time;
 
+    printf("Laço interno das linhas\n");
+    memcpy(x_lin, b, N * sizeof(double));
+    start_time = omp_get_wtime();
+    substitution_retroactive_row(A, b, x_lin);
+    end_time = omp_get_wtime();
+    printf("Tempo de execução: %f segundos\n", end_time - start_time);
+
+    printf("Primeiro laço colunas\n");
+    memcpy(x_col, b, N * sizeof(double));
+    start_time = omp_get_wtime();
+    substitution_retroactive_column(A, b, x_col);
+    end_time = omp_get_wtime();
+    printf("Tempo de execução: %f segundos\n", end_time - start_time);
+
+    printf("Laço paralelo interno das colunas\n");
+    memcpy(x_col, b, N * sizeof(double));
+    start_time = omp_get_wtime();
+    substitution_retroactive_column_inner(A, b, x_col);
+    end_time = omp_get_wtime();
+    printf("Tempo de execução: %f segundos\n", end_time - start_time);
 
     return 0;
 }
