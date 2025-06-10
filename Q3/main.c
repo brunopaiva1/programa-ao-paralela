@@ -58,7 +58,7 @@ void back_substitution_row_oriented_parallel_inner(double A[N][N], double b[N], 
     for(lin = N - 1; lin >= 0; lin--){
         double current_b = b[lin];
         double terms_to_subtract = 0.0;
-        #pragma omp parallel for reduction(+:terms_to_subtract)
+# pragma omp parallel for reduction(+:terms_to_subtract)
         for(col = lin + 1; col < N; col++){
             terms_to_subtract += A[lin][col] * x[col];
         }
@@ -68,7 +68,7 @@ void back_substitution_row_oriented_parallel_inner(double A[N][N], double b[N], 
 
 void back_substitution_column_oriented_parallel_initial_loop(double A[N][N], double b[N], double x[N]) {
     int i, col, lin;
-    #pragma omp parallel for
+# pragma omp parallel for
     for(i = 0; i < N; i++){
         x[i] = b[i];
     }
@@ -81,14 +81,14 @@ void back_substitution_column_oriented_parallel_initial_loop(double A[N][N], dou
 
 void back_substitution_column_oriented_parallel_inner(double A[N][N], double b[N], double x[N], int num_threads) {
     int i, col, lin;
-    #pragma omp parallel num_threads(num_threads) default(none) private(lin, col)
+# pragma omp parallel num_threads(num_threads) default(none) private(lin, col)
     for(i = 0; i < N; i++){
         x[i] = b[i];
     }
     for(col = N - 1; col >= 0; col--){
-        #pragma omp single
+# pragma omp single
         x[col] /= A[col][col];
-        #pragma omp parallel for schedule(runtime)
+# pragma omp parallel for schedule(runtime)
         for(lin = 0; lin < col; lin++){
             x[lin] -= A[lin][col] * x[col];
         }
