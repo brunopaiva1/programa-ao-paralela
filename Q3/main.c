@@ -4,7 +4,7 @@
 #include <string.h>
 #include <math.h>   
 
-#define N 15000
+#define N 16000
 
 #define EPSILON 1e-9
 
@@ -58,7 +58,7 @@ void back_substitution_row_oriented_parallel_inner(double A[N][N], double b[N], 
     for(lin = N - 1; lin >= 0; lin--){
         double current_b = b[lin];
         double terms_to_subtract = 0.0;
-# pragma omp parallel for reduction(+:terms_to_subtract)
+#pragma omp parallel for reduction(+:terms_to_subtract)
         for(col = lin + 1; col < N; col++){
             terms_to_subtract += A[lin][col] * x[col];
         }
@@ -68,30 +68,42 @@ void back_substitution_row_oriented_parallel_inner(double A[N][N], double b[N], 
 
 void back_substitution_column_oriented_parallel_initial_loop(double A[N][N], double b[N], double x[N]) {
     int i, col, lin;
-# pragma omp parallel for
-    for(i = 0; i < N; i++){
-        x[i] = b[i];
-    }
-    for(col = N - 1; col >= 0; col--){
-        x[col] /= A[col][col];
-        for(lin = 0; lin < col; lin++)
-            x[lin] -= A[lin][col] * x[col];
-    }
-}
 
-void back_substitution_column_oriented_parallel_inner(double A[N][N], double b[N], double x[N]) {
-    int i, col, lin;
+#pragma omp parallel private(i, col, lin)
+{
+#pragma omp for
     for(i = 0; i < N; i++){
         x[i] = b[i];
     }
     for(col = N - 1; col >= 0; col--){
-# pragma omp single
+        #pragma omp single
         x[col] /= A[col][col];
-# pragma omp parallel for schedule(runtime)
+#pragma omp for schedule(dynamic, 2000)
         for(lin = 0; lin < col; lin++){
             x[lin] -= A[lin][col] * x[col];
         }
     }
+}
+}
+
+void back_substitution_column_oriented_parallel_inner(double A[N][N], double b[N], double x[N]) {
+    int i, col, lin;
+
+#pragma omp parallel default(none) shared(A, b, x) private(i, col, lin)
+{
+#pragma omp for
+    for(i = 0; i < N; i++){
+        x[i] = b[i];
+    }
+    for(col = N - 1; col >= 0; col--){
+#pragma omp single
+        x[col] /= A[col][col];
+#pragma omp for schedule(dynamic, 2000)
+        for(lin = 0; lin < col; lin++){
+            x[lin] -= A[lin][col] * x[col];
+        }
+    }
+}
 }
 
 int compare_results(double* result_parallel, double* result_serial, int size, const char* test_name) {

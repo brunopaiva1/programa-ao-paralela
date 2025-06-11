@@ -6,4 +6,4 @@ cd $PREFIX ; wait
 
 make -j ; wait
 
-./saida.o
+./saida.o 4
