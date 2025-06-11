@@ -5,18 +5,18 @@
 
 double EstPi(int thread_count, long long int num_lancamentos){
     int lancamentos;
-    double x, y, dist_2;
+    double x, y, distancia_quadrada;
     long long int qtd_no_circulo = 0;
     srand(time(NULL));
 
     #pragma omp parallel for num_threads(thread_count) reduction(+:qtd_no_circulo) \
-    default(none) private(x, y, dist_2, lancamentos) shared(num_lancamentos)
+    default(none) private(x, y, distancia_quadrada, lancamentos) shared(num_lancamentos)
     for(lancamentos = 0; lancamentos < num_lancamentos; lancamentos++){
         unsigned int seed = (unsigned int) time(NULL) ^ (omp_get_thread_num() + lancamentos);
         x = ((double)rand_r(&seed) / RAND_MAX) * 2.0 - 1.0;
         y = ((double)rand_r(&seed) / RAND_MAX) * 2.0 - 1.0;
-        dist_2 = (x*x)+(y*y);
-        if (dist_2 <= 1) qtd_no_circulo++;
+        distancia_quadrada = (x*x)+(y*y);
+        if (distancia_quadrada <= 1) qtd_no_circulo++;
     }
     return (4 * qtd_no_circulo)/((double) num_lancamentos);
 }
