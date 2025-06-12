@@ -78,7 +78,7 @@ void back_substitution_column_oriented_parallel_initial_loop(double A[N][N], dou
     for(col = N - 1; col >= 0; col--){
         #pragma omp single
         x[col] /= A[col][col];
-#pragma omp for schedule(dynamic, 2000)
+#pragma omp for schedule(static, 2000)
         for(lin = 0; lin < col; lin++){
             x[lin] -= A[lin][col] * x[col];
         }
@@ -98,7 +98,7 @@ void back_substitution_column_oriented_parallel_inner(double A[N][N], double b[N
     for(col = N - 1; col >= 0; col--){
 #pragma omp single
         x[col] /= A[col][col];
-#pragma omp for schedule(dynamic, 2000)
+#pragma omp for schedule(static, 2000)
         for(lin = 0; lin < col; lin++){
             x[lin] -= A[lin][col] * x[col];
         }
