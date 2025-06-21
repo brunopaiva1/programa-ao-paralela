@@ -66,26 +66,6 @@ void back_substitution_row_oriented_parallel_inner(double A[N][N], double b[N], 
     }
 }
 
-void back_substitution_column_oriented_parallel_initial_loop(double A[N][N], double b[N], double x[N]) {
-    int i, col, lin;
-
-#pragma omp parallel private(i, col, lin)
-{
-#pragma omp for
-    for(i = 0; i < N; i++){
-        x[i] = b[i];
-    }
-    for(col = N - 1; col >= 0; col--){
-        #pragma omp single
-        x[col] /= A[col][col];
-#pragma omp for schedule(static, 2000)
-        for(lin = 0; lin < col; lin++){
-            x[lin] -= A[lin][col] * x[col];
-        }
-    }
-}
-}
-
 void back_substitution_column_oriented_parallel_inner(double A[N][N], double b[N], double x[N]) {
     int i, col, lin;
 
@@ -169,14 +149,6 @@ int main(int argc, char *argv[]) {
     back_substitution_column_oriented_serial(A_mat, b_vec, x_serial);
     end_time = omp_get_wtime();
     printf("Tempo Serial: %f segundos\n", end_time - start_time);
-
-    memcpy(x_parallel, b_vec, N * sizeof(double));
-    start_time = omp_get_wtime();
-    back_substitution_column_oriented_parallel_initial_loop(A_mat, b_vec, x_parallel);
-    end_time = omp_get_wtime();
-    printf("Tempo Paralelo: %f segundos\n", end_time - start_time);
-
-    compare_results(x_parallel, x_serial, N, "Primeiro Laco Paralelo");
 
     printf("\n=== Algoritmo Colunas - Laco Interno Paralelo ===\n");
 
