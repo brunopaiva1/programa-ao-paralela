@@ -1,7 +1,7 @@
-// 8. [Pacheco and Malensek, 2022] Escreva um programa MPI que calcule uma soma global
-// estruturada em árvore. Primeiro, escreva seu programa para o caso especial em que
-// comm_sz é uma potência de dois. Depois que esta versão estiver funcionando, modifique
-// seu programa para que ele possa lidar com qualquer comm_sz.
+/*8. [Pacheco and Malensek, 2022] Escreva um programa MPI que calcule uma soma global
+estruturada em árvore. Primeiro, escreva seu programa para o caso especial em que
+comm_sz é uma potência de dois. Depois que esta versão estiver funcionando, modifique
+seu programa para que ele possa lidar com qualquer comm_sz.*/
 
 #include <stdio.h>
 #include <mpi.h>
@@ -14,11 +14,10 @@ int main(int argc, char* argv[]) {
     MPI_Comm_size(MPI_COMM_WORLD, &comm_sz); 
 
     value = rank + 1;
-    sum = value;
 
     int step = 1;
     while (step < comm_sz) {
-        if (rank % (2 * step) == 0) {
+        if ((rank & step) == 0) {
             partner = rank + step;
             if (partner < comm_sz) {
                 MPI_Recv(&sum, 1, MPI_INT, partner, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -27,10 +26,9 @@ int main(int argc, char* argv[]) {
         } else {
             partner = rank - step;
             MPI_Send(&value, 1, MPI_INT, partner, 0, MPI_COMM_WORLD);
-            MPI_Finalize(); 
-            return 0;      
+            break;
         }
-        step *= 2;
+        step <<= 1;
     }
 
     if (rank == 0) {
