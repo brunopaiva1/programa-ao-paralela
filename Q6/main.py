@@ -27,6 +27,6 @@ def plotar_histograma(labels, contagens):
     plt.show()
 
 if __name__ == "__main__":
-    caminho_arquivo = "/home/brunopaiva/openmp/Q6/histograma.txt"
+    caminho_arquivo = "/home/brunopaiva/Documentos/openmp/Q6/histograma.txt"
     bins, contagens = carregar_histograma(caminho_arquivo)
     plotar_histograma(bins, contagens)

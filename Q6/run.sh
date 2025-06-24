@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PREFIX=$HOME/openmp/Q6 ; wait
+PREFIX=$HOME/Documentos/openmp/Q6 ; wait
 
 cd $PREFIX ; wait
 
