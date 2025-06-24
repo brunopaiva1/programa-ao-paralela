@@ -17,6 +17,7 @@ int main(int argc, char *argv[]){
     int *sub_A, *sub_B;
     int local_n;
     int local_dot, global_dot;
+    double start_time, end_time;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -26,11 +27,13 @@ int main(int argc, char *argv[]){
         if(rank == 0){
             printf("ERRO %d não é divisivel por %d", &n, &comm_sz);
         }
-        MPI_Abort(MPI_COMM_WORLD, int erro);
+        MPI_Abort(MPI_COMM_WORLD, 1);
         return -1;
     }
 
-    
+    local_n = n / comm_sz;
+    sub_A = (int *)malloc(local_n * sizeof(int));
+    sub_B = (int *)malloc(local_n * sizeof(int));
 
     return 0;
 }
