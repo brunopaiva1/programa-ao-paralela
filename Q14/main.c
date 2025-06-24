@@ -37,5 +37,40 @@ int main(int argc, char *argv[]){
     sub_A = (int *)malloc(local_n * sizeof(int));
     sub_B = (int *)malloc(local_n * sizeof(int));
 
+    if(rank == 0){
+        A = (int *)malloc(n * sizeof(int));
+        B = (int *)malloc(n * sizeof(int));
+
+        srand(time(NULL));
+        for(int i = 0; i < n; i++){
+            A[i] = rand() % 10;
+            B[i] = rand() % 10;
+        }
+        start_time = MPI_Wtime();
+    }
+
+    MPI_Scatter(A, local_n, MPI_INT, sub_A, local_n, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Scatter(B, local_n, MPI_INT, sub_B, local_n, MPI_INT, 0, MPI_COMM_WORLD);
+
+    for(int i = 0; i < local_n; i++){
+        local_dot += sub_A[i] * sub_B[i];
+    }
+
+    MPI_Reduce(&local_dot, &global_dot, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    if(rank == 0){
+        end_time = MPI_Wtime();
+        print("Produto escalar total: %d\n");
+        printf("Tempo de execução: %f segundos\n");
+    }
+
+    free(sub_A);
+    free(sub_B);
+    if(rank == 0){
+        free(A);
+        free(B);
+    }
+
+    MPI_Finalize();
     return 0;
 }
