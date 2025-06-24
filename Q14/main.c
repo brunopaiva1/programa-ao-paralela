@@ -26,7 +26,7 @@ int main(int argc, char *argv[]){
     if(rank == 0){
         n = 1000;
         if(n % comm_sz != 0){
-            printf("ERRO %d não é divisivel por %d\n", &n, &comm_sz);
+            printf("ERRO %d não é divisivel por %d\n", n, comm_sz);
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
     }
@@ -60,8 +60,8 @@ int main(int argc, char *argv[]){
 
     if(rank == 0){
         end_time = MPI_Wtime();
-        print("Produto escalar total: %d\n");
-        printf("Tempo de execução: %f segundos\n");
+        printf("Produto escalar total: %d\n", global_dot);
+        printf("Tempo de execução: %f segundos\n", end_time - start_time);
     }
 
     free(sub_A);
