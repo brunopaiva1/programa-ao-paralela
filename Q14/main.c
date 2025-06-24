@@ -23,13 +23,15 @@ int main(int argc, char *argv[]){
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
 
-    if(n % comm_sz != 0){
-        if(rank == 0){
-            printf("ERRO %d não é divisivel por %d", &n, &comm_sz);
+    if(rank == 0){
+        n = 1000;
+        if(n % comm_sz != 0){
+            printf("ERRO %d não é divisivel por %d\n", &n, &comm_sz);
+            MPI_Abort(MPI_COMM_WORLD, 1);
         }
-        MPI_Abort(MPI_COMM_WORLD, 1);
-        return -1;
     }
+
+    MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     local_n = n / comm_sz;
     sub_A = (int *)malloc(local_n * sizeof(int));
