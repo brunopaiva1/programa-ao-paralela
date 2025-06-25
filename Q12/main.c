@@ -26,9 +26,9 @@ int main(int argc, char *argv[]){
         if(rank == 0) {
             printf("Erro: (%d) não é divisível por (%d)\n", n, comm_sz);
         }
-        MPI_Finalize();
-        return -1; 
+        MPI_Abort(MPI_COMM_WORLD, 1);
     }
+
     local_n = n / comm_sz;
     sub_A = (int *)malloc(local_n * sizeof(int));
     sub_B = (int *)malloc(local_n * sizeof(int));
@@ -59,24 +59,17 @@ int main(int argc, char *argv[]){
     for(int i = 0; i < local_n; i++){
         local_dot += sub_A[i] * sub_B[i];
     }
-    if (rank != 0) {
-        MPI_Send(&local_dot, 1, MPI_INT, 0, 2, MPI_COMM_WORLD);
-    } else {
-        global_dot = local_dot;
-        int temp;
-        for (int i = 1; i < comm_sz; i++) {
-            MPI_Recv(&temp, 1, MPI_INT, i, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            global_dot += temp;
-        }
+
+    MPI_Reduce(&local_dot, &global_dot, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    if (rank == 0) {
         printf("Produto escalar total: %d\n", global_dot);
+        free(A);
+        free(B);
     }
 
     free(sub_A);
     free(sub_B);
-    if (rank == 0) {
-        free(A);
-        free(B);
-    }
 
     MPI_Finalize();
     return 0;
