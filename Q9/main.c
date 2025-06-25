@@ -2,62 +2,62 @@
 #include <stdlib.h>
 #include <mpi.h>
 
-void butterfly_all_reduce(int *process_local_sum, int current_process_rank, int total_processes);
+void reducao_geral_borboleta(int *soma_local_processo, int rank, int comm_sz);
 
 int main(int argc, char *argv[]) {
-    int current_process_rank, total_processes;
+    int rank, comm_sz;
 
     MPI_Init(&argc, &argv);
-    MPI_Comm_size(MPI_COMM_WORLD, &total_processes);
-    MPI_Comm_rank(MPI_COMM_WORLD, &current_process_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    int process_local_sum = current_process_rank + 1;
-    butterfly_all_reduce(&process_local_sum, current_process_rank, total_processes);
+    int soma_local_processo = rank + 1;
+    reducao_geral_borboleta(&soma_local_processo, rank, comm_sz);
 
-    printf("Processo %d -> Soma Global: %d\n", current_process_rank, process_local_sum);
+    printf("Processo %d -> Soma Global: %d\n", rank, soma_local_processo);
 
     MPI_Finalize();
     return 0;
 }
 
-void butterfly_all_reduce(int *process_local_sum, int current_process_rank, int total_processes) {
-    int iteration_step;
-    int received_value;
-    int communication_partner_rank;
+void reducao_geral_borboleta(int *soma_local_processo, int rank, int comm_sz) {
+    int passo_iteracao;
+    int valor_recebido;
+    int id_parceiro_comunicacao;
 
-    int largest_power_of_two_group_size = 1;
-    while (largest_power_of_two_group_size < total_processes) {
-        largest_power_of_two_group_size <<= 1;
+    int tam_pot2 = 1;
+    while (tam_pot2 < comm_sz) {
+        tam_pot2 <<= 1;
     }
-    largest_power_of_two_group_size >>= 1;
+    tam_pot2 >>= 1;
 
-    int remaining_processes_count = total_processes - largest_power_of_two_group_size;
+    int contagem_processos_restantes = comm_sz - tam_pot2;
 
-    if (current_process_rank >= largest_power_of_two_group_size) {
-        MPI_Send(process_local_sum, 1, MPI_INT, current_process_rank - largest_power_of_two_group_size, 0, MPI_COMM_WORLD);
+    if (rank >= tam_pot2) {
+        MPI_Send(soma_local_processo, 1, MPI_INT, rank - tam_pot2, 0, MPI_COMM_WORLD);
     }
     
-    if (current_process_rank < remaining_processes_count) {
-        MPI_Recv(&received_value, 1, MPI_INT, current_process_rank + largest_power_of_two_group_size, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        (*process_local_sum) += received_value;
+    if (rank < contagem_processos_restantes) {
+        MPI_Recv(&valor_recebido, 1, MPI_INT, rank + tam_pot2, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        (*soma_local_processo) += valor_recebido;
     }
 
-    if (current_process_rank < largest_power_of_two_group_size) {
-        for (iteration_step = 1; iteration_step < largest_power_of_two_group_size; iteration_step *= 2) {
-            communication_partner_rank = current_process_rank ^ iteration_step;
+    if (rank < tam_pot2) {
+        for (passo_iteracao = 1; passo_iteracao < tam_pot2; passo_iteracao *= 2) {
+            id_parceiro_comunicacao = rank ^ passo_iteracao;
 
-            MPI_Sendrecv(process_local_sum, 1, MPI_INT, communication_partner_rank, 0,
-                         &received_value, 1, MPI_INT, communication_partner_rank, 0,
+            MPI_Sendrecv(soma_local_processo, 1, MPI_INT, id_parceiro_comunicacao, 0,
+                         &valor_recebido, 1, MPI_INT, id_parceiro_comunicacao, 0,
                          MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            (*process_local_sum) += received_value;
+            (*soma_local_processo) += valor_recebido;
         }
     }
 
-    if (current_process_rank < remaining_processes_count) {
-        MPI_Send(process_local_sum, 1, MPI_INT, current_process_rank + largest_power_of_two_group_size, 0, MPI_COMM_WORLD);
+    if (rank < contagem_processos_restantes) {
+        MPI_Send(soma_local_processo, 1, MPI_INT, rank + tam_pot2, 0, MPI_COMM_WORLD);
     }
     
-    if (current_process_rank >= largest_power_of_two_group_size) {
-        MPI_Recv(process_local_sum, 1, MPI_INT, current_process_rank - largest_power_of_two_group_size, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    if (rank >= tam_pot2) {
+        MPI_Recv(soma_local_processo, 1, MPI_INT, rank - tam_pot2, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
 }
