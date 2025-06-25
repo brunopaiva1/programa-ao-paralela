@@ -77,6 +77,8 @@ int main(int argc, char *argv[]){
         }
 
         printf("Maior número de passos: %d\n", local_max_steps);
+        end_time = MPI_Wtime();
+        printf("Tempo de execução: %lf segundos\n", end_time - start_time);
 
     } else { 
         int task_data[2];
@@ -99,9 +101,7 @@ int main(int argc, char *argv[]){
         }
         
     }
-    end_time = MPI_Wtime();
-    printf("Tempo de execução: %lf segundos\n", end_time - start_time);
-
+    
     MPI_Finalize();
     return 0;
 }
