@@ -24,7 +24,7 @@ int main(int argc, char *argv[]){
     MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
 
     if(rank == 0){
-        n = 1000;
+        n = 1000000000;
         if(n % comm_sz != 0){
             printf("ERRO %d não é divisivel por %d\n", n, comm_sz);
             MPI_Abort(MPI_COMM_WORLD, 1);

@@ -6,4 +6,4 @@ cd $PREFIX ; wait
 
 make -j ; wait
 
-mpiexec -np 4 ./saida.o 2
+mpiexec -np 2 ./saida.o 2
