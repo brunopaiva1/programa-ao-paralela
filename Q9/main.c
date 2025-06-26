@@ -1,3 +1,8 @@
+/*9. [Pacheco and Malensek, 2022] Escreva um programa MPI que calcule uma soma global
+usando uma borboleta. Primeiro, escreva seu programa para o caso especial em que
+comm_sz é uma potência de dois. Modifique seu programa para que ele lide com qualquer
+número de processos. */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
@@ -26,7 +31,7 @@ void reducao_geral_borboleta(int *soma_local_processo, int rank, int comm_sz) {
     int id_parceiro_comunicacao;
 
     int tam_pot2 = 1;
-    while (tam_pot2 < comm_sz) {
+    while (tam_pot2 <= comm_sz) {
         tam_pot2 <<= 1;
     }
     tam_pot2 >>= 1;
