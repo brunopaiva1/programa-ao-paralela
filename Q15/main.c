@@ -98,8 +98,7 @@ int main(int argc, char *argv[]){
             MPI_Request request;
             MPI_Isend(&max_steps, 1, MPI_INT, 0, 1, MPI_COMM_WORLD, &request);
             MPI_Wait(&request, &status);
-        }
-        
+        }     
     }
     
     MPI_Finalize();
