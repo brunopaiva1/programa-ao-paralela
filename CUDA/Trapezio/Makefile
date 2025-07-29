@@ -1,5 +1,5 @@
 NVCC = nvcc
-CUDA_FLAGS = -g -G
+CUDA_FLAGS = -g -G -arch=sm_70
 TARGET = trap
 SOURCES = trap.cu
 
