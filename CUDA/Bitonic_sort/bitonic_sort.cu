@@ -25,3 +25,4 @@ de threads */
 #include <cuda_runtime.h>
 
 #define THREADS_PER_BLOCK 256
+
