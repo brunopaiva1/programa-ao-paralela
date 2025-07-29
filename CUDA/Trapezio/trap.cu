@@ -7,6 +7,7 @@ o número de trapézios for um múltiplo do número de threads.*/
 #include <stdlib.h>
 #include <cuda_runtime.h>
 #include <math.h>
+#include <time.h>
 
 #define THREADS_PER_BLOCK 256
 
@@ -33,6 +34,8 @@ __global__ void integrate(const double a, const double h, const long long n, con
 }
 
 int main(int argc, char *argv[]) {
+    clock_t start, end;
+    start = clock();
     if (argc != 5) {
         printf("Uso: %s <threads> <trapezios> <a> <b>\n", argv[0]);
         return 1;
@@ -68,5 +71,10 @@ int main(int argc, char *argv[]) {
     printf("Resultado da integral: %.12f\n", integral_result);
 
     cudaFree(d_global_sum);
+
+    end = clock();
+    double total_time = ((double)(end - start)) / CLOCKS_PER_SEC;
+    printf("Tempo total (CPU + GPU): %f segundos\n", total_time);
+
     return 0;
 }
