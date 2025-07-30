@@ -50,3 +50,11 @@ int *generate_random_array(int n, int size) {
     return array;
 }
 
+void imprimi_array(int *array, int n) {
+    for (int i = 0; i < n; i++) {
+        printf("%d ", array[i]);
+    }
+    printf("\n");
+}
+
+
