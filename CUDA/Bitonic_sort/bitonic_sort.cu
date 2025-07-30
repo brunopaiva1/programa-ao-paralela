@@ -66,18 +66,21 @@ void imprimi_array(int *array, int n) {
     printf("\n");
 }
 
-__global__ void bitonic_sort(int *array, int stage, int bf_size){
+__global__ void bitonic_sort(int *array, int stage, int bf_size) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
-    int id_partiner = i ^ stage;
-    if(id_partiner > i){
-        if(((i & bf_size) == 0 && array[i] > array[id_partiner]) || 
-           ((i & bf_size) != 0 && array[i] < array[id_partiner])){
+    int j = i ^ stage;
+
+    if (j > i) {
+        int dir = (i & bf_size) == 0;
+
+        if ((dir && array[i] > array[j]) || (!dir && array[i] < array[j])) {
             int temp = array[i];
-            array[i] = array[id_partiner];
-            array[id_partiner] = temp;
+            array[i] = array[j];
+            array[j] = temp;
         }
     }
 }
+
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
