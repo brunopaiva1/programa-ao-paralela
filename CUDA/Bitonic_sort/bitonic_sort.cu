@@ -79,4 +79,46 @@ __global__ void bitonic_sort(int *array, int stage, int bf_size){
     }
 }
 
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <size>\n", argv[0]);
+        return EXIT_FAILURE;
+    }
+
+    int n = atoi(argv[1]);
+    if (n <= 0) {
+        fprintf(stderr, "Invalid size\n");
+        return EXIT_FAILURE;
+    }
+
+    int size = pot_2(n);
+    int *h_array = generate_random_array(n, size);
+    int *d_array;
+
+    cudaMalloc((void **)&d_array, size * sizeof(int));
+    cudaMemcpy(d_array, h_array, n * sizeof(int), cudaMemcpyHostToDevice);
+
+    int stages = log2(size);
+    for (int stage = 1; stage <= stages; stage++) {
+        int bf_size = 1 << stage;
+        int blocks = (size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+        bitonic_sort<<<blocks, THREADS_PER_BLOCK>>>(d_array, stage, bf_size);
+        cudaDeviceSynchronize();
+    }
+
+    cudaMemcpy(h_array, d_array, size * sizeof(int), cudaMemcpyDeviceToHost);
+    
+    if (check_order(h_array, n)) {
+        printf("Array is sorted correctly.\n");
+    } else {
+        printf("Array is not sorted correctly.\n");
+    }
+
+    imprimi_array(h_array, n);
+
+    free(h_array);
+    cudaFree(d_array);
+
+    return EXIT_SUCCESS;
+}
 
