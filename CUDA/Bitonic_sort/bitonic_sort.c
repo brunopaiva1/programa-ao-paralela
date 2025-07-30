@@ -18,7 +18,11 @@ int *generate_random_array(int n) {
         exit(EXIT_FAILURE);
     }
     for (int i = 0; i < n; i++) {
-        array[i] = rand() % INT_MAX;
+        array[i] = rand() % (INT_MAX/10000000);
+    }
+
+    for(int i = n; i < pot_2(n); i++) {
+        array[i] = INT_MAX;
     }
     return array;
 }
