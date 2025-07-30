@@ -13,7 +13,6 @@ cd /scratch/pex1272-ufersa/bruno.silva7/programacao-paralela/CUDA/Bitonic_sort
 module load gcc/14.2.0_sequana
 module load openmpi/gnu/4.1.4+gcc-12.4+cuda-11.6_sequana
 
-make clean
-make
+nvcc -arch=sm_70 -o main_cuda.exe bitonic_sort.cu
 
-./bitonic_sort 1024
+time srun -n 1 ./main_cuda.exe 500000000
