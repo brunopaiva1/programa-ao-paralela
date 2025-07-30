@@ -37,7 +37,7 @@ int check_order(int *array, int n) {
 
 int pot_2(int n) {
     int pot = 1;
-    while (pot < n) {
+    while (pot <= n) {
         pot *= 2;
     }
     return pot;
