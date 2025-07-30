@@ -26,6 +26,15 @@ de threads */
 
 #define THREADS_PER_BLOCK 256
 
+int check_order(int *array, int n) {
+    for (int i = 0; i < n - 1; i++) {
+        if (array[i] > array[i + 1]) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 int pot_2(int n) {
     int pot = 1;
     while (pot < n) {
