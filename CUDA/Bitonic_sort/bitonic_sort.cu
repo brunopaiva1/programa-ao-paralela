@@ -34,3 +34,19 @@ int pot_2(int n) {
     return pot;
 }
 
+int *generate_random_array(int n, int size) {
+    int *array = (int *)malloc(size * sizeof(int));
+    if (array == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < n; i++) {
+        array[i] = rand() % (INT_MAX/10000000);
+    }
+
+    for(int i = n; i < size; i++) {
+        array[i] = INT_MAX;
+    }
+    return array;
+}
+
