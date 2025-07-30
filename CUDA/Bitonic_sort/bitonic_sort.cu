@@ -2,10 +2,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <time.h>
-#include <cuda.h>
 #include <cuda_runtime.h>
-
-#define THREADS_PER_BLOCK 256
 
 int check_order(int *array, int n) {
     for (int i = 0; i < n - 1; i++) {
@@ -31,9 +28,8 @@ int *generate_random_array(int n, int size) {
         exit(EXIT_FAILURE);
     }
     for (int i = 0; i < n; i++) {
-        array[i] = rand() % (INT_MAX/10000000);
+        array[i] = rand() % 20000;
     }
-
     for(int i = n; i < size; i++) {
         array[i] = INT_MAX;
     }
@@ -55,8 +51,9 @@ __global__ void bitonic_sort(int *array, int stage, int bf_size, int size){
     }
 
     int id_partiner = i ^ stage;
-    if(id_partiner > i && id_partiner < size) {
-        if(((i & bf_size) == 0 && array[i] > array[id_partiner]) || 
+
+    if(id_partiner > i){
+        if(((i & bf_size) == 0 && array[i] > array[id_partiner]) ||
            ((i & bf_size) != 0 && array[i] < array[id_partiner])){
             int temp = array[i];
             array[i] = array[id_partiner];
@@ -82,13 +79,15 @@ int main(int argc, char *argv[]) {
     int *h_array = generate_random_array(n, size);
     int *d_array;
 
-  int print_size = (n < 32) ? n : 32;
-    printf("Array de entrada (primeiros %d elementos de %d):\n", print_size, size);
+    int print_size = (n < 32) ? n : 32;
+    printf("Array input (first %d elements of %d):\n", print_size, size);
     imprimi_array(h_array, print_size);
 
-    cudaMalloc((void **)&d_array, size * sizeof(int));
-    cudaMemcpy(d_array, h_array, size * sizeof(int), cudaMemcpyHostToDevice);
+    size_t size_bytes = size * sizeof(int);
+    cudaMalloc((void **)&d_array, size_bytes);
+    cudaMemcpy(d_array, h_array, size_bytes, cudaMemcpyHostToDevice);
 
+    const int THREADS_PER_BLOCK = 256;
     int blocks = (size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
 
     for (int bf_size = 2; bf_size <= size; bf_size *= 2) {
@@ -98,15 +97,15 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    cudaMemcpy(h_array, d_array, size * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_array, d_array, size_bytes, cudaMemcpyDeviceToHost);
 
-    printf("\nArray de saída (primeiros %d elementos):\n", print_size);
+    printf("\nArray output (first %d elements):\n", print_size);
     imprimi_array(h_array, print_size);
 
     if (check_order(h_array, n)) {
-        printf("\n O array está ordenado corretamente.\n");
+        printf("\nThe array is sorted correctly.\n");
     } else {
-        printf("\n O array NÃO está ordenado corretamente.\n");
+        printf("\nThe array is NOT sorted correctly.\n");
     }
 
     free(h_array);
