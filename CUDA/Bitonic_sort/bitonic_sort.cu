@@ -90,31 +90,37 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Invalid size\n");
         return EXIT_FAILURE;
     }
+    srand(time(NULL));
 
     int size = pot_2(n);
     int *h_array = generate_random_array(n, size);
     int *d_array;
 
-    cudaMalloc((void **)&d_array, size * sizeof(int));
-    cudaMemcpy(d_array, h_array, n * sizeof(int), cudaMemcpyHostToDevice);
+    printf("Array input(primeiros %d elements): \n", n);
+    imprimi_array(h_array, n);
 
-    int stages = log2(size);
-    for (int stage = 1; stage <= stages; stage++) {
-        int bf_size = 1 << stage;
-        int blocks = (size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-        bitonic_sort<<<blocks, THREADS_PER_BLOCK>>>(d_array, stage, bf_size);
-        cudaDeviceSynchronize();
+    cudaMalloc((void **)&d_array, size * sizeof(int));
+    cudaMemcpy(d_array, h_array, size * sizeof(int), cudaMemcpyHostToDevice);
+
+    int blocks = (size / 2 + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+
+    for (int bf_size = 2; bf_size <= size; bf_size *= 2) {
+        for (int stage = bf_size / 2; stage > 0; stage /= 2) {
+            bitonic_sort<<<blocks, THREADS_PER_BLOCK>>>(d_array, stage, bf_size);
+            cudaDeviceSynchronize();
+        }
     }
 
     cudaMemcpy(h_array, d_array, size * sizeof(int), cudaMemcpyDeviceToHost);
     
-    if (check_order(h_array, n)) {
-        printf("Array is sorted correctly.\n");
-    } else {
-        printf("Array is not sorted correctly.\n");
-    }
-
+    printf("\nArray de saída (primeiros %d elementos):\n", n);
     imprimi_array(h_array, n);
+    
+    if (check_order(h_array, n)) {
+        printf("\nO array está ordenado corretamente.\n");
+    } else {
+        printf("\nO array NÃO está ordenado corretamente.\n");
+    }
 
     free(h_array);
     cudaFree(d_array);
