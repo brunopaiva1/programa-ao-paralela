@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --time=00:10:00
-#SBATCH --cpus-per-task=24
+#SBATCH --cpus-per-task=8
 #SBATCH -p sequana_gpu_dev
 #SBATCH -J exemplo
 #SBATCH --exclusive

@@ -1,5 +1,5 @@
 NVCC = nvcc
-CUDA_FLAGS = -g -G -arch=sm_70
+CUDA_FLAGS = -g -G -arch=sm_70 -Xcompiler -fopenmp
 TARGET = matriz
 SOURCES = matriz.cu
 
