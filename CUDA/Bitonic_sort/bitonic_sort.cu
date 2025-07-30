@@ -66,21 +66,18 @@ void imprimi_array(int *array, int n) {
     printf("\n");
 }
 
-__global__ void bitonic_sort(int *array, int stage, int bf_size) {
+__global__ void bitonic_sort(int *array, int stage, int bf_size){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
-    int j = i ^ stage;
-
-    if (j > i) {
-        int dir = (i & bf_size) == 0;
-
-        if ((dir && array[i] > array[j]) || (!dir && array[i] < array[j])) {
+    int id_partiner = i ^ stage;
+    if(id_partiner > i){
+        if(((i & bf_size) == 0 && array[i] > array[id_partiner]) || 
+           ((i & bf_size) != 0 && array[i] < array[id_partiner])){
             int temp = array[i];
-            array[i] = array[j];
-            array[j] = temp;
+            array[i] = array[id_partiner];
+            array[id_partiner] = temp;
         }
     }
 }
-
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -93,19 +90,31 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Invalid size\n");
         return EXIT_FAILURE;
     }
+
     srand(time(NULL));
+    int size
+    int *h_array = generate_random_array(n, &size);
+    // int *d_array;
 
-    int size = pot_2(n);
-    int *h_array = generate_random_array(n, size);
+    // printf("Array input (first %d elements): \n", n);
+    // imprimi_array(h_array, n);
+
+    if(size <= 32){
+        print("Array original: \n");
+        imprimi_array(h_array, size);
+    }else{
+        printf("Array with size %d: \n", size);
+    }
+
     int *d_array;
+    size_t size_bytes = size * sizeof(int);
 
-    printf("Array input (first %d elements): \n", n);
-    imprimi_array(h_array, n);
-
-    cudaMalloc((void **)&d_array, size * sizeof(int));
-    cudaMemcpy(d_array, h_array, size * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMalloc((void **)&d_array, size_bytes);
+    cudaMemcpy(d_array, h_array, size_bytes, cudaMemcpyHostToDevice);
 
     int blocks = (size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+
+    printf("Starting sorting with Bitonic Sort in CUDA\tThreads per block: %d\tGrid of blocks: %d\n", THREADS_PER_BLOCK, blocks);
 
     for (int bf_size = 2; bf_size <= size; bf_size *= 2) {
         for (int stage = bf_size / 2; stage > 0; stage /= 2) {
@@ -116,18 +125,19 @@ int main(int argc, char *argv[]) {
 
     cudaMemcpy(h_array, d_array, size * sizeof(int), cudaMemcpyDeviceToHost);
 
-    printf("\nArray output (first %d elements):\n", n);
-    imprimi_array(h_array, n);
-    
-    if (check_order(h_array, n)) {
-        printf("\n The array is sorted correctly.\n");
+    if(size <= 32){
+        printf("Array sorted: \n");
+        imprimi_array(h_array, size);
+    }
+    int check = check_order(h_array, size);
+    if (check) {
+        printf("Array is sorted correctly.\n");
     } else {
-        printf("\n The array is NOT sorted correctly.\n");
+        printf("Array is NOT sorted correctly.\n");
     }
 
     free(h_array);
     cudaFree(d_array);
-
-    return EXIT_SUCCESS;
+    return 0;
 }
 
