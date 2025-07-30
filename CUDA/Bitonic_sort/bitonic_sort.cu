@@ -37,7 +37,7 @@ int check_order(int *array, int n) {
 
 int pot_2(int n) {
     int pot = 1;
-    while (pot <= n) {
+    while (pot < n) {
         pot *= 2;
     }
     return pot;
@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
     cudaMalloc((void **)&d_array, size * sizeof(int));
     cudaMemcpy(d_array, h_array, size * sizeof(int), cudaMemcpyHostToDevice);
 
-    int blocks = (size / 2 + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+    int blocks = (size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
 
     for (int bf_size = 2; bf_size <= size; bf_size *= 2) {
         for (int stage = bf_size / 2; stage > 0; stage /= 2) {
