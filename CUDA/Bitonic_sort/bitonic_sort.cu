@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
     int *h_array = generate_random_array(n, size);
     int *d_array;
 
-    printf("Array input(primeiros %d elements): \n", n);
+    printf("Array input (first %d elements): \n", n);
     imprimi_array(h_array, n);
 
     cudaMalloc((void **)&d_array, size * sizeof(int));
@@ -112,14 +112,14 @@ int main(int argc, char *argv[]) {
     }
 
     cudaMemcpy(h_array, d_array, size * sizeof(int), cudaMemcpyDeviceToHost);
-    
-    printf("\nArray output (primeiros %d elementos):\n", n);
+
+    printf("\nArray output (first %d elements):\n", n);
     imprimi_array(h_array, n);
     
     if (check_order(h_array, n)) {
-        printf("\nO array está ordenado corretamente.\n");
+        printf("\n The array is sorted correctly.\n");
     } else {
-        printf("\nO array NÃO está ordenado corretamente.\n");
+        printf("\n The array is NOT sorted correctly.\n");
     }
 
     free(h_array);
