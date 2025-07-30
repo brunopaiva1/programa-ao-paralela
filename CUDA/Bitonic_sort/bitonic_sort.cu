@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
 
     cudaMemcpy(h_array, d_array, size * sizeof(int), cudaMemcpyDeviceToHost);
     
-    printf("\nArray de saída (primeiros %d elementos):\n", n);
+    printf("\nArray output (primeiros %d elementos):\n", n);
     imprimi_array(h_array, n);
     
     if (check_order(h_array, n)) {

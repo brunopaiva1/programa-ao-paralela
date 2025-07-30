@@ -16,4 +16,4 @@ module load openmpi/gnu/4.1.4+gcc-12.4+cuda-11.6_sequana
 make clean
 make
 
-./trap 1024
+./bitonic_sort 1024
