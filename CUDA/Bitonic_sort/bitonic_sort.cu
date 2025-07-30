@@ -26,3 +26,11 @@ de threads */
 
 #define THREADS_PER_BLOCK 256
 
+int pot_2(int n) {
+    int pot = 1;
+    while (pot < n) {
+        pot *= 2;
+    }
+    return pot;
+}
+
