@@ -2,127 +2,151 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <time.h>
-#include <cuda.h>
 #include <cuda_runtime.h>
+#include <cuda.h>
 
 #define THREADS_PER_BLOCK 256
 
-int check_order(int *array, int n) {
-    for (int i = 0; i < n - 1; i++) {
-        if (array[i] > array[i + 1]) {
+int verificar_ordenacao(int *arr, int n)
+{
+    for (int i = 0; i < n - 1; i++)
+    {
+        if (arr[i] > arr[i + 1])
+        {
             return 0;
         }
     }
     return 1;
 }
 
-int pot_2(int n) {
+int maior_potencia_2(int n)
+{
+    if (n < 1)
+        return 0;
     int pot = 1;
-    while (pot < n) {
+    while (pot <= n)
         pot *= 2;
-    }
     return pot;
 }
 
-int *generate_random_array(int n, int *size) {
-    int pot = pot_2(n);
-    if (size != NULL) {
-        *size = pot;
+int *gerar_array(int n, int *tamanho_total)
+{
+    int pot = maior_potencia_2(n);
+
+    if (pot < n)
+        pot <<= 1;
+
+    if (tamanho_total != NULL)
+        *tamanho_total = pot;
+
+    int *arr = (int *)malloc(pot * sizeof(int));
+    if (arr == NULL)
+    {
+        printf("Erro ao alocar memória.\n");
+        exit(1);
     }
 
-    int *array = (int *)malloc(pot * sizeof(int));
-    if (array == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
-        exit(EXIT_FAILURE);
+    for (int i = 0; i < n; i++)
+    {
+        arr[i] = rand() % (INT_MAX / 10000000);
     }
 
-    for (int i = 0; i < n; i++) {
-        array[i] = rand() % (INT_MAX / 10000000);
+    for (int i = n; i < pot; i++)
+    {
+        arr[i] = INT_MAX;
     }
 
-    for (int i = n; i < *size; i++) {
-        array[i] = INT_MAX;
-    }
-
-    return array;
+    return arr;
 }
 
-
-void imprimi_array(int *array, int n) {
-    for (int i = 0; i < n; i++) {
-        printf("%d ", array[i]);
+void imprimir_array(int *arr, int tamanho)
+{
+    for (int i = 0; i < tamanho; i++)
+    {
+        if (arr[i] == INT_MAX)
+            printf("INF ");
+        else
+            printf("%d ", arr[i]);
     }
     printf("\n");
 }
 
-__global__ void bitonic_sort(int *array, int stage, int bf_size){
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    int id_partiner = i ^ stage;
-    if(id_partiner > i){
-        if(((i & bf_size) == 0 && array[i] > array[id_partiner]) || 
-           ((i & bf_size) != 0 && array[i] < array[id_partiner])){
-            int temp = array[i];
-            array[i] = array[id_partiner];
-            array[id_partiner] = temp;
+__global__ void bitonic_sort(int *arr, int stage, int bf_size)
+{
+    int i = threadIdx.x + blockIdx.x * blockDim.x;
+    int indice_parceiro = i ^ stage;
+    if (indice_parceiro > i)
+    {
+        if (((i & bf_size) == 0 && arr[i] > arr[indice_parceiro]) ||
+            ((i & bf_size) != 0 && arr[i] < arr[indice_parceiro]))
+        {
+            int temp = arr[i];
+            arr[i] = arr[indice_parceiro];
+            arr[indice_parceiro] = temp;
         }
     }
 }
 
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <size>\n", argv[0]);
-        return EXIT_FAILURE;
+int main(int argc, char *argv[])
+{
+    if (argc != 2)
+    {
+        printf("Uso: %s <tamanho_array>\n", argv[0]);
+        exit(1);
     }
 
-    int n = atoi(argv[1]);
-    if (n <= 0) {
-        fprintf(stderr, "Invalid size\n");
-        return EXIT_FAILURE;
+    int entrada_n = atoi(argv[1]);
+    if (entrada_n <= 0)
+    {
+        printf("Erro: o tamanho do array deve ser um inteiro positivo.\n");
+        exit(1);
     }
 
     srand(time(NULL));
-    int size;
-    int *h_array = generate_random_array(n, &size);
+    int tamanho_real;
+    int *array = gerar_array(entrada_n, &tamanho_real);
 
-    if(size <= 32){
-        printf("Array original: \n");
-        imprimi_array(h_array, size);
-    }else{
-        printf("Array with size %d: \n", size);
+    if (tamanho_real <= 32)
+    {
+        printf("Array original: ");
+        imprimir_array(array, tamanho_real);
+    }
+    else
+    {
+        printf("Array gerado com tamanho %d (oculto por ser grande).\n", tamanho_real);
     }
 
-    int *d_array;
-    size_t size_bytes = size * sizeof(int);
+    int *gpu_array;
+    size_t tamanho_bytes = tamanho_real * sizeof(int);
 
-    cudaMalloc((void **)&d_array, size_bytes);
-    cudaMemcpy(d_array, h_array, size_bytes, cudaMemcpyHostToDevice);
+    cudaMalloc((void **)&gpu_array, tamanho_bytes);
+    cudaMemcpy(gpu_array, array, tamanho_bytes, cudaMemcpyHostToDevice);
 
-    int blocks = (size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+    int blocksPerGrid = (tamanho_real + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
 
-    printf("Starting sorting with Bitonic Sort in CUDA\tThreads per block: %d\tGrid of blocks: %d\n", THREADS_PER_BLOCK, blocks);
+    printf("Iniciando ordenação com Bitonic Sort em CUDA\tThreads por bloco: %d\tGrid de blocos: %d\n",
+           THREADS_PER_BLOCK, blocksPerGrid);
 
-    for (int bf_size = 2; bf_size <= size; bf_size *= 2) {
-        for (int stage = bf_size / 2; stage > 0; stage /= 2) {
-            bitonic_sort<<<blocks, THREADS_PER_BLOCK>>>(d_array, stage, bf_size);
-            cudaDeviceSynchronize();
+    for (int bf_size = 2; bf_size <= tamanho_real; bf_size *= 2)
+    {
+        for (int stage = bf_size / 2; stage > 0; stage /= 2)
+        {
+            bitonic_sort<<<blocksPerGrid, THREADS_PER_BLOCK>>>(gpu_array, stage, bf_size);
         }
     }
 
-    cudaMemcpy(h_array, d_array, size * sizeof(int), cudaMemcpyDeviceToHost);
-
-    if(size <= 32){
-        printf("Array sorted: \n");
-        imprimi_array(h_array, size);
+    cudaMemcpy(array, gpu_array, tamanho_bytes, cudaMemcpyDeviceToHost);
+    if (tamanho_real <= 32)
+    {
+        printf("Array ordenado: ");
+        imprimir_array(array, tamanho_real);
     }
-    int check = check_order(h_array, size);
-    if (check) {
-        printf("Array is sorted correctly.\n");
-    } else {
-        printf("Array is NOT sorted correctly.\n");
-    }
-
-    free(h_array);
-    cudaFree(d_array);
+    int ordenado = verificar_ordenacao(array, tamanho_real);
+    if (ordenado)
+        printf("O array está corretamente ordenado.\n");
+    else
+        printf("Erro: o array não está ordenado corretamente.\n");
+    free(array);
+    cudaFree(gpu_array);
     return 0;
 }
-
