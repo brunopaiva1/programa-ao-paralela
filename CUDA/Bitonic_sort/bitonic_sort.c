@@ -35,5 +35,23 @@ void imprimi_array(int *array, int n) {
 }
 
 void bitonic_sort(int *array, int n) {
+    int stage, bf_size, i;
+    int indice_parceiro;
 
+    for(bf_size = 2; bf_size <= n; bf_size *= 2) {
+        for(stage = bf_size / 2; stage > 0; stage /= 2) {
+            for(i = 0; i < n; i++) {
+                    indice_parceiro = i ^ stage;
+                    if(indice_parceiro > i) {
+                        if(((i & bf_size) == 0 && array[i] > array[indice_parceiro]) ||
+                           ((i & bf_size) != 0 && array[i] < array[indice_parceiro])) {
+                            int temp = array[i];
+                            array[i] = array[indice_parceiro];
+                            array[indice_parceiro] = temp;
+                  
+                    }
+                }
+            }
+        }
+    }
 }
