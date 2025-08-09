@@ -2,9 +2,9 @@
 
 $PREFIX=$HOME/programacao-paralela/CUDA/Bitonic_sort ; wait
 
-cd $PREFIX
+cd $PREFIX ; wait
 
-make clean
-make
+make clean ; wait
+make ; wait
 
 time ./bitonic_sort.exe 16
