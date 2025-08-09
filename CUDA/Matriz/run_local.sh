@@ -2,9 +2,9 @@
 
 $PREFIX=$HOME/programacao-paralela/CUDA/Matriz ; wait
 
-cd $PREFIX
+cd $PREFIX ; wait
 
-make clean
-make
+make clean ; wait
+make ; wait
 
 time ./matriz.exe 1024
