@@ -1,9 +1,9 @@
 #!/bin/bash
 
-PREFIX=$HOME/Documentos/openmp/Q13 ; wait
+PREFIX=$HOME/programacao-paralela/MPI/Anel ; wait
 
 cd $PREFIX ; wait
 
 make -j ; wait
 
-mpiexec -np 2 ./saida.o 2
+mpiexec -np 2 ./saida.exe 4
