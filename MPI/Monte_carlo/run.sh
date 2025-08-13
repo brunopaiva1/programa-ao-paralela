@@ -1,9 +1,9 @@
 #!/bin/bash
 
-PREFIX=$HOME/Documentos/openmp/Q7 ; wait
+PREFIX=$HOME/home/bruno/programacao-paralela/MPI/Monte_carlo ; wait
 
 cd $PREFIX ; wait
 
 make -j ; wait
 
-mpiexec -np 4 ./saida.o 100000000
+mpiexec -np 4 ./saida.exe 100000000

@@ -1,4 +1,4 @@
 all:
-	mpicc main.c -o saida.o -lm
+	mpicc monte_carlo.c -o saida.exe -lm
 clean:
-	rm *.o
+	rm *.exe
