@@ -26,7 +26,6 @@ def plotar_histograma(labels, contagens):
     plt.xticks(rotation=45)
     plt.grid(True, linestyle="--", alpha=0.5)
     plt.tight_layout()
-    plt.show()
 
     plt.savefig("histograma.png", dpi=300)
 
