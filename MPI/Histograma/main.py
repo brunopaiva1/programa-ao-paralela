@@ -28,7 +28,10 @@ def plotar_histograma(labels, contagens):
     plt.tight_layout()
     plt.show()
 
+    plt.savefig("histograma.png", dpi=300)
+
 if __name__ == "__main__":
     caminho_arquivo = "/home/bruno/programacao-paralela/MPI/Histograma/histograma.txt"
     bins, contagens = carregar_histograma(caminho_arquivo)
     plotar_histograma(bins, contagens)
+
