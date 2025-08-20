@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 
 def carregar_histograma(caminho_arquivo):
@@ -27,6 +29,6 @@ def plotar_histograma(labels, contagens):
     plt.show()
 
 if __name__ == "__main__":
-    caminho_arquivo = "/home/brunopaiva/Documentos/openmp/Q6/histograma.txt"
+    caminho_arquivo = "/home/bruno/programacao-paralela/MPI/Histograma/histograma.txt"
     bins, contagens = carregar_histograma(caminho_arquivo)
     plotar_histograma(bins, contagens)

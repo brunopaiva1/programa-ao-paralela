@@ -1,4 +1,4 @@
 all:
-	mpicc -g -Wall -o saida.o parallel.c 
+	mpicc -g -Wall -o saida.exe histograma.c 
 clean:
 	rm *.o
